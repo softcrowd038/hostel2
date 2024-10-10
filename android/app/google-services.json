@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1019378541718",
+    "project_id": "accident-df789",
+    "storage_bucket": "accident-df789.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1019378541718:android:cbb6c9654e2fc6c7b30eb7",
+        "android_client_info": {
+          "package_name": "com.example.accident"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA9R9GzGQrM5tpo20TUFTpdjjvH7_CaT3U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
