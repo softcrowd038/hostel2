@@ -26,35 +26,41 @@ class CommonTextFormfield extends StatelessWidget {
       obscureText: obscure,
       controller: controller,
       validator: validator,
-      style: const TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
+      style: TextStyle(
+          color: const Color.fromARGB(255, 255, 255, 255),
+          fontSize: MediaQuery.of(context).size.height * 0.016),
       decoration: InputDecoration(
-          fillColor: Colors.white,
+          fillColor: const Color.fromARGB(255, 48, 48, 48),
           filled: true,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(30),
             borderSide: const BorderSide(
-              color: Colors.white,
+              color: Color.fromARGB(255, 126, 126, 126),
               width: 1,
             ),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(30),
             borderSide: const BorderSide(
-              color: Colors.white,
+              color: Color.fromARGB(255, 126, 126, 126),
               width: 1,
             ),
           ),
           errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(30),
             borderSide: const BorderSide(
               color: Colors.red,
               width: 1,
             ),
           ),
           labelText: label,
-          labelStyle: const TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
+          labelStyle: TextStyle(
+              color: const Color.fromARGB(255, 252, 252, 252),
+              fontSize: MediaQuery.of(context).size.height * 0.016),
           hintText: hint,
-          hintStyle: const TextStyle(color: Colors.grey),
+          hintStyle: TextStyle(
+              color: const Color.fromARGB(255, 138, 138, 138),
+              fontSize: MediaQuery.of(context).size.height * 0.015),
           suffixIcon: suffixIcon),
     );
   }

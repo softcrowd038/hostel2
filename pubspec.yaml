@@ -36,30 +36,19 @@ dependencies:
   cupertino_icons:
   provider:
   http:
-  firebase_core:
-  firebase_auth:
-  cloud_firestore:
   liquid_progress_indicator_v2:
-  image_picker:
   flutter_polyline_points:
   google_maps_flutter:
   location:
-  flutter_svg:
   permission_handler:
   geolocator:
   geocoding:
-  fluttertoast:
-  sensors:
-  sms_v2:
-  telephony:
-  flutter_background_service:
-  flutter_background_service_android:
-  flutter_background_service_ios:
-  flutter_local_notifications:
   shared_preferences:
-  workmanager:
   connectivity_plus:
-  awesome_notifications:
+  url_launcher:
+  mobile_scanner:
+  circle_nav_bar:
+
 
 dev_dependencies:
   flutter_test:

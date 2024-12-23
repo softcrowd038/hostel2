@@ -59,10 +59,8 @@ class LiveLocationTrackerState extends State<LiveLocationTracker> {
     setState(() {
       _isTextVisible = true;
 
-      // Show current address container
       _showCurrentAddress = true;
 
-      // Hide current address container after 3 seconds
       Future.delayed(const Duration(seconds: 3), () {
         if (mounted) {
           setState(() {

@@ -32,26 +32,13 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Color.fromARGB(255, 255, 255, 255),
       body: Center(
-        child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Image(
-                image: AssetImage("assets/images/logo.png"),
-                height: 250,
-                width: 250,
-              ),
-              Text(
-                "ACCIDETECT",
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.5),
-              )
-            ]),
+        child: Image(
+          image: AssetImage("assets/images/hostel.png"),
+          height: 250,
+          width: 250,
+        ),
       ),
     );
   }

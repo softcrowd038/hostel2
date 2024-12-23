@@ -1,5 +1,4 @@
 import 'package:accident/Presentation/login_and_registration/Model/user_.dart';
-import 'package:accident/Presentation/login_and_registration/Services/signup_signin.dart';
 import 'package:accident/Presentation/login_and_registration/Widgets/common_textform_field.dart';
 import 'package:accident/Presentation/login_and_registration/Widgets/custom_button_.dart';
 import 'package:accident/Presentation/login_and_registration/pages/login_registration.dart';
@@ -56,45 +55,54 @@ class _RegistrationPageState extends State<RegistrationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+      backgroundColor: Colors.white,
       body: Consumer<UserCredentials>(
         builder: (context, userCredentials, child) => Form(
           key: _formKey,
-          child: OrientationBuilder(
-            builder: (context, orientation) => SafeArea(
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(15.0),
-                  child: SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12.0),
+          child: SafeArea(
+            child: SingleChildScrollView(
+              child: Stack(
+                children: [
+                  Container(
+                    height: MediaQuery.of(context).size.height,
+                    width: MediaQuery.of(context).size.width,
+                    decoration: const BoxDecoration(
+                      image: DecorationImage(
+                          image: NetworkImage(
+                              'https://w0.peakpx.com/wallpaper/869/552/HD-wallpaper-dark-vertical-red-black-portrait-display.jpg'),
+                          fit: BoxFit.cover),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    child: Container(
+                      height: MediaQuery.of(context).size.height * 0.72,
+                      width: MediaQuery.of(context).size.width,
+                      decoration: const BoxDecoration(
+                        color: Colors.black,
+                      ),
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Padding(
-                              padding: EdgeInsets.only(left: 15.0, bottom: 8.0),
-                              child: Center(
-                                child: Text(
-                                  "SIGNUP",
-                                  style: TextStyle(
-                                      fontSize: 25,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color.fromARGB(255, 0, 0, 0)),
-                                ),
+                              padding: EdgeInsets.only(left: 15.0),
+                              child: Text(
+                                "SIGNUP",
+                                style: TextStyle(
+                                    fontSize: 25,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color.fromARGB(255, 221, 15, 0)),
                               )),
                           const Padding(
                               padding:
                                   EdgeInsets.only(left: 15.0, bottom: 15.0),
-                              child: Center(
-                                child: Text(
-                                  "Create Your Awesome Account Here!",
-                                  style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w500,
-                                      color:
-                                          Color.fromARGB(255, 0, 0, 0)),
-                                ),
+                              child: Text(
+                                "Create Your Awesome Account Here!",
+                                style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.white),
                               )),
                           const SizedBox(
                             height: 30,
@@ -189,10 +197,11 @@ class _RegistrationPageState extends State<RegistrationPage> {
                           GestureDetector(
                             onTap: () {
                               if (_formKey.currentState!.validate()) {
-                                UiHelper(context).signUp(
-                                  _emailController.text.trim(),
-                                  _passwordController.text.trim(),
-                                );
+                                Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            const LoginPage()));
                               }
                             },
                             child: const Padding(
@@ -227,7 +236,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                   child: const Text(
                                     "Signin",
                                     style: TextStyle(
-                                      color: Color.fromARGB(255, 0, 0, 0),
+                                      color: Colors.white,
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -238,7 +247,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       ),
                     ),
                   ),
-                ),
+                ],
               ),
             ),
           ),
