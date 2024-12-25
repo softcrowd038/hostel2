@@ -23,9 +23,6 @@ class _EmergencyScreen extends State<EmergencyScreen> {
   @override
   void initState() {
     super.initState();
-    Provider.of<LocationProvider>(context, listen: false)
-        .requestLocationPermissionAndGetCurrentLocation();
-    requestPermissions();
     _fetchStudentProfile();
   }
 
