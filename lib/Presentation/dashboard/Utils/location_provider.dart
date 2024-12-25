@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_print, deprecated_member_use
 
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
@@ -8,7 +8,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 class LocationProvider extends ChangeNotifier {
   LatLng? _currentPosition;
-  String? _currentAddress; // Store the current address
+  String? _currentAddress;
 
   LatLng? get currentPosition => _currentPosition;
   String? get currentAddress => _currentAddress;
@@ -19,18 +19,18 @@ class LocationProvider extends ChangeNotifier {
   }
 
   Future<void> requestLocationPermissionAndGetCurrentLocation() async {
-    try {
-      var status = await Permission.locationWhenInUse.status;
-      if (status.isDenied || status.isPermanentlyDenied) {
-        var result = await Permission.locationWhenInUse.request();
-        if (result.isGranted) {
-          await _getCurrentLocation();
-        }
-      } else if (status.isGranted) {
+    var status = await Permission.locationWhenInUse.status;
+    if (status.isDenied || status.isPermanentlyDenied) {
+      var result = await Permission.locationWhenInUse.request();
+      if (result.isGranted) {
         await _getCurrentLocation();
+      } else {
+        print('Location permission denied.');
+        _currentPosition = null;
+        notifyListeners();
       }
-    } catch (e) {
-      print('Error requesting location permission: $e');
+    } else if (status.isGranted) {
+      await _getCurrentLocation();
     }
   }
 

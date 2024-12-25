@@ -1,148 +1,82 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: use_build_context_synchronously, avoid_print
 
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
+import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:accident/Presentation/Emergency/Models/profile_model.dart';
+import 'package:accident/Presentation/Emergency/Provider/student_profile_provider.dart';
+import 'package:accident/Presentation/scanner/Provider/scanner_provider.dart';
 
 class ScannerPage extends StatefulWidget {
-  const ScannerPage({
-    super.key,
-  });
+  const ScannerPage({Key? key}) : super(key: key);
 
   @override
-  State<ScannerPage> createState() => _ScannerPageState();
+  State<StatefulWidget> createState() => _ScannerPageState();
 }
 
 class _ScannerPageState extends State<ScannerPage> {
-  String qrResult = "";
-  bool isClicked = false;
-  double turns = 0.0;
   bool isCheckedIn = false;
-  String uniqueID = "Rutik@123";
-  MobileScannerController? scannerController;
+  String uniqueID = "2ddb8d41-76ee-4368-aebc-041ff0d93b78";
+  StudentProfile? studentProfile;
+  bool isLoading = false;
 
   @override
   void initState() {
     super.initState();
-
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-    ]);
-    initial();
+    _fetchStudentProfile().then((_) {
+      getCheckInCheckOutStatus();
+    });
   }
 
-  @override
-  void dispose() {
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
-    super.dispose();
-  }
-
-  Future<SharedPreferences> getSharedPreferencesInstance() async {
-    return await SharedPreferences.getInstance();
-  }
-
-  String? visitorId;
-
-  void initial() async {
-    SharedPreferences prefs = await getSharedPreferencesInstance();
-    visitorId = prefs.getString("visitorId");
-  }
-
-  void _showErrorDialog(String errorMessage) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          content: Text(
-            errorMessage,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text("OK"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _processScanResult(String qrCode) async {
-    String apiUrl =
-        'https://softcrowd.in/gaushala_management_system/login_api/check_in_out_api.php';
-
+  Future<void> getCheckInCheckOutStatus() async {
     try {
-      Map<String, dynamic> requestData = {
-        'qrCode': qrCode,
-        'action': isCheckedIn ? 'check_out' : 'check_in',
-      };
-
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        body: json.encode(requestData),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        Map<String, dynamic> data = json.decode(response.body);
-        String time = data['time'] ?? '';
-
-        if (isCheckedIn) {
-          _saveCheckOutTimeLocally(time);
-        } else {
-          _saveCheckInTimeLocally(time);
-        }
-
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _showSuccessDialog(
-              '${isCheckedIn ? 'Check-out' : 'Check-in'} successful!');
-        });
-      } else {
-        _showErrorDialog('Failed to ${isCheckedIn ? 'check_out' : 'check_in'}');
-      }
-
-      setState(() => isCheckedIn = !isCheckedIn);
+      final provider = Provider.of<ScannerProvider>(context, listen: false);
+      final status = await provider.getCheckoutStatus(studentProfile?.id ?? 0);
+      setState(() {
+        isCheckedIn = status.status == 'checked-in';
+      });
     } catch (e) {
-      _showErrorDialog(
-          'Error during ${isCheckedIn ? 'check_out' : 'check_in'}');
+      print('Error fetching check-in status: $e');
     }
   }
 
-  void _saveCheckInTimeLocally(String checkInTime) {
-    print('Check-in time saved locally: $checkInTime');
+  Future<void> _fetchStudentProfile() async {
+    try {
+      SharedPreferences sharedPreferences =
+          await SharedPreferences.getInstance();
+      final uuid = sharedPreferences.getString('user_uuid');
+      if (uuid == null) throw Exception('User UUID not found');
+
+      final provider =
+          Provider.of<StudentProfileProvider>(context, listen: false);
+      final profile = await provider.fetchStudentProfile(uuid);
+
+      if (mounted) {
+        setState(() {
+          studentProfile = profile;
+        });
+      }
+    } catch (e) {
+      print('Error fetching student profile: $e');
+      _showDialog("Error", "Unable to fetch student profile. Please try again.",
+          isError: true);
+    }
   }
 
-  void _saveCheckOutTimeLocally(String checkOutTime) {
-    print('Check-out time saved locally: $checkOutTime');
-  }
-
-  void _showSuccessDialog(String successMessage) {
+  void _showDialog(String title, String message, {bool isError = false}) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (context) {
         return AlertDialog(
-          title: const Text("Success"),
-          content: Text(successMessage),
+          title: Text(
+            title,
+            style: TextStyle(color: isError ? Colors.red : Colors.black),
+          ),
+          content: Text(message),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
               child: const Text("OK"),
             ),
           ],
@@ -151,7 +85,36 @@ class _ScannerPageState extends State<ScannerPage> {
     );
   }
 
-  void startScanner() {
+  Future<void> _processScan(int regnum, String checkedstatus) async {
+    final provider = Provider.of<ScannerProvider>(context, listen: false);
+
+    setState(() {
+      isLoading = true;
+    });
+    print('enter Process scan');
+    print(checkedstatus);
+
+    try {
+      final response = checkedstatus == 'checked-in'
+          ? await provider.postCheckOut(regnum)
+          : await provider.postCheckIn(regnum);
+
+      if (response['status'] == 'success') {
+        await getCheckInCheckOutStatus();
+      } else {
+        _showDialog("Error", response['message'] ?? "Operation failed",
+            isError: true);
+      }
+    } catch (e) {
+      _showDialog("Error", "An error occurred: $e", isError: true);
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  void startScanner(String checkedStatus) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -174,27 +137,16 @@ class _ScannerPageState extends State<ScannerPage> {
               ),
               onDetect: (capture) {
                 final List<Barcode> barcodes = capture.barcodes;
-                final Uint8List? image = capture.image;
 
                 for (final barcode in barcodes) {
                   String qrCode = barcode.rawValue ?? "";
                   if (qrCode.isNotEmpty && qrCode == uniqueID) {
-                    _processScanResult(qrCode);
+                    _processScan(studentProfile?.id ?? 0, checkedStatus);
                     Navigator.pop(context);
                     break;
                   } else {
-                    _showErrorDialog("Invalid QR Code!");
+                    print("Invalid QR Code!");
                   }
-                }
-
-                if (image != null) {
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: Text(barcodes.first.rawValue ?? ""),
-                      content: Image.memory(image),
-                    ),
-                  );
                 }
               },
             ),
@@ -208,60 +160,92 @@ class _ScannerPageState extends State<ScannerPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Column(
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 SizedBox(
                   height: MediaQuery.of(context).size.height * 0.60,
                   width: MediaQuery.of(context).size.width,
                   child: Image.network(
-                      'https://img.freepik.com/free-vector/qr-code-scanning-concept-with-characters-illustrated_23-2148633631.jpg?t=st=1731662909~exp=1731666509~hmac=ec5aca77af0fbc48e3907594fa49b775f91d4778f942db38cf045ada43c8b9bf&w=740'),
+                    'https://img.freepik.com/free-vector/qr-code-scanning-concept-with-characters-illustrated_23-2148633631.jpg',
+                  ),
                 ),
                 Text(
                   'SCAN QR',
                   style: TextStyle(
-                      color: Colors.black,
-                      fontSize: MediaQuery.of(context).size.height * 0.024,
-                      fontWeight: FontWeight.bold),
+                    color: Colors.black,
+                    fontSize: MediaQuery.of(context).size.height * 0.024,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                Text(
-                  'Click below Button to Scan QR CODE to ${isCheckedIn ? 'Checkout' : 'CheckIn'}',
-                  style: TextStyle(
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: MediaQuery.of(context).size.height * 0.015),
+                  child: Text(
+                    'Click below Button to Scan QR CODE to  Check Out and Check In',
+                    style: TextStyle(
                       color: const Color.fromARGB(255, 161, 161, 161),
-                      fontSize: MediaQuery.of(context).size.height * 0.015),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      isClicked = !isClicked;
-                    });
-                    startScanner();
-                  },
-                  child: Padding(
-                    padding: EdgeInsets.all(
-                        MediaQuery.of(context).size.height * 0.0150),
-                    child: Container(
-                      height: MediaQuery.of(context).size.height * 0.050,
-                      width: MediaQuery.of(context).size.width,
-                      color: isCheckedIn
-                          ? const Color.fromARGB(255, 221, 15, 0)
-                          : const Color.fromARGB(255, 10, 82, 12),
-                      child: Center(
-                        child: Text(
-                          isCheckedIn ? 'Check Out' : 'Check In',
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                      ),
+                      fontSize: MediaQuery.of(context).size.height * 0.015,
                     ),
                   ),
                 ),
+                Consumer<ScannerProvider>(
+                  builder: (context, provider, child) {
+                    return GestureDetector(
+                      onTap: () {
+                        startScanner(provider.checkInStatus);
+                      },
+                      child: Padding(
+                        padding: EdgeInsets.all(
+                            MediaQuery.of(context).size.height * 0.015),
+                        child: Container(
+                          height: MediaQuery.of(context).size.height * 0.050,
+                          width: MediaQuery.of(context).size.width * 0.60,
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              gradient: provider.checkInStatus == 'checked-in'
+                                  ? const LinearGradient(
+                                      colors: [
+                                        Color.fromARGB(255, 201, 79, 79),
+                                        Color.fromARGB(255, 141, 61, 61),
+                                      ],
+                                    )
+                                  : const LinearGradient(
+                                      colors: [
+                                        Color(0xff7ac94f),
+                                        Color(0xff3d8d4f),
+                                      ],
+                                    )),
+                          child: Center(
+                            child: isLoading
+                                ? const CircularProgressIndicator(
+                                    color: Colors.white)
+                                : Text(
+                                    provider.checkInStatus == 'checked-in'
+                                        ? 'Check Out'
+                                        : 'Check In',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize:
+                                          MediaQuery.of(context).size.height *
+                                              0.02,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

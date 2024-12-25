@@ -1,4 +1,13 @@
+// ignore_for_file: avoid_print, use_build_context_synchronously
+
+import 'package:accident/Presentation/Emergency/Models/profile_model.dart';
+import 'package:accident/Presentation/Emergency/Provider/student_profile_provider.dart';
+import 'package:accident/Presentation/dashboard/Utils/location_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:telephony/telephony.dart';
 
 class EmergencyScreen extends StatefulWidget {
   const EmergencyScreen({super.key});
@@ -8,19 +17,105 @@ class EmergencyScreen extends StatefulWidget {
 }
 
 class _EmergencyScreen extends State<EmergencyScreen> {
+  StudentProfile? studentProfile;
+  DateTime? _lastSmsTimestamp;
+
+  @override
+  void initState() {
+    super.initState();
+    Provider.of<LocationProvider>(context, listen: false)
+        .requestLocationPermissionAndGetCurrentLocation();
+    requestPermissions();
+    _fetchStudentProfile();
+  }
+
+  Future<void> _fetchStudentProfile() async {
+    if (!mounted) return;
+    try {
+      SharedPreferences sharedPreferences =
+          await SharedPreferences.getInstance();
+      final uuid = sharedPreferences.getString('user_uuid');
+      if (uuid == null) throw Exception('User UUID not found');
+      final provider =
+          Provider.of<StudentProfileProvider>(context, listen: false);
+      final profile = await provider.fetchStudentProfile(uuid);
+      if (mounted) {
+        setState(() {
+          studentProfile = profile;
+        });
+      }
+    } catch (e) {
+      print('Error fetching student profile: $e');
+    }
+  }
+
+  void requestPermissions() async {
+    try {
+      final bool? result = await Telephony.instance.requestSmsPermissions;
+      if (result == true) {
+        print("SMS permission granted");
+      } else {
+        print("SMS permission denied");
+      }
+    } catch (e) {
+      print('Error requesting permissions: $e');
+    }
+  }
+
+  void sendEmergencySMS() async {
+    final provider = Provider.of<LocationProvider>(context, listen: false);
+
+    if (_lastSmsTimestamp == null ||
+        DateTime.now().difference(_lastSmsTimestamp!) >
+            const Duration(seconds: 15)) {
+      try {
+        if (studentProfile?.emergencyContactNumber == null) {
+          print('Emergency phone number is not available.');
+          return;
+        }
+
+        String emergencyNumber = studentProfile!.emergencyContactNumber;
+        LatLng? currentPosition = provider.currentPosition;
+        print(currentPosition?.latitude);
+        if (currentPosition == null) {
+          print('Current position is not available.');
+          return;
+        }
+
+        String message = 'https://www.google.com/maps/search/?api=1'
+            '&query=${currentPosition.latitude},${currentPosition.longitude}';
+        await Telephony.instance.sendSms(
+            to: emergencyNumber,
+            message: 'Hey, I caught in emergency, at this location: $message');
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Emergency SMS sent to $emergencyNumber')),
+        );
+        _lastSmsTimestamp = DateTime.now();
+      } catch (e) {
+        print('Error sending emergency SMS: $e');
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('SMS not sent due to cooldown period')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-      ),
+      appBar: AppBar(backgroundColor: Colors.white),
       body: SafeArea(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             SizedBox(
-              height: MediaQuery.of(context).size.height * 0.5,
+              height: screenHeight * 0.5,
               child: Image.network(
                   'https://img.freepik.com/free-vector/emergency-call-concept-illustration_114360-6864.jpg'),
             ),
@@ -28,27 +123,25 @@ class _EmergencyScreen extends State<EmergencyScreen> {
               'Emergency',
               style: TextStyle(
                   color: Colors.black,
-                  fontSize: MediaQuery.of(context).size.height * 0.024,
+                  fontSize: screenHeight * 0.024,
                   fontWeight: FontWeight.bold),
             ),
             Padding(
-              padding:
-                  EdgeInsets.all(MediaQuery.of(context).size.height * 0.018),
+              padding: EdgeInsets.all(screenHeight * 0.018),
               child: Text(
-                'Press the below button in case of emergency it will share you live location to your parents',
+                'Press the below button in case of emergency. It will share your live location with your parents.',
                 style: TextStyle(
                     color: const Color.fromARGB(255, 161, 161, 161),
-                    fontSize: MediaQuery.of(context).size.height * 0.015),
+                    fontSize: screenHeight * 0.015),
               ),
             ),
             GestureDetector(
-              onTap: () {},
+              onTap: sendEmergencySMS,
               child: Padding(
-                padding:
-                    EdgeInsets.all(MediaQuery.of(context).size.height * 0.0150),
+                padding: EdgeInsets.all(screenHeight * 0.015),
                 child: Container(
-                  height: MediaQuery.of(context).size.height * 0.050,
-                  width: MediaQuery.of(context).size.width,
+                  height: screenHeight * 0.05,
+                  width: screenWidth,
                   color: const Color.fromARGB(255, 221, 15, 0),
                   child: Center(
                     child: Text(
@@ -56,7 +149,7 @@ class _EmergencyScreen extends State<EmergencyScreen> {
                       style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: MediaQuery.of(context).size.height * 0.018),
+                          fontSize: screenHeight * 0.018),
                     ),
                   ),
                 ),

@@ -1,8 +1,8 @@
-import 'package:accident/Presentation/Navigation/page_navigation.dart';
 import 'package:accident/Presentation/login_and_registration/Model/user_.dart';
+import 'package:accident/Presentation/login_and_registration/Services/api_service.dart';
 import 'package:accident/Presentation/login_and_registration/Widgets/common_textform_field.dart';
 import 'package:accident/Presentation/login_and_registration/Widgets/custom_button_.dart';
-import 'package:accident/Presentation/login_and_registration/pages/registration_.dart';
+import 'package:accident/data/api_data.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -16,11 +16,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   late TextEditingController _emailController = TextEditingController();
   late TextEditingController _passwordController = TextEditingController();
-  late TextEditingController _reEnterPasswordController =
-      TextEditingController();
-  final regexe = RegExp(r'^[\w\-\.]+@([\w\-]+\.)+[\w\-]{2,4}$');
-  final regexpa =
-      RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[A-Za-z\d\W_]{8,}$');
+
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -28,15 +24,24 @@ class _LoginPageState extends State<LoginPage> {
     super.initState();
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
-    _reEnterPasswordController = TextEditingController();
   }
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
-    _reEnterPasswordController.dispose();
+
     super.dispose();
+  }
+
+  ApiService apiService = ApiService();
+
+  Future<void> loginStudent(String email, String password) async {
+    try {
+      await apiService.loginStudent(context, email, password);
+    } catch (e) {
+      throw Exception('Error $e');
+    }
   }
 
   void _updateEmail(String value) {
@@ -63,51 +68,70 @@ class _LoginPageState extends State<LoginPage> {
                         height: MediaQuery.of(context).size.height,
                         width: MediaQuery.of(context).size.width,
                         decoration: const BoxDecoration(
-                          image: DecorationImage(
-                              image: NetworkImage(
-                                  'https://w0.peakpx.com/wallpaper/869/552/HD-wallpaper-dark-vertical-red-black-portrait-display.jpg'),
-                              fit: BoxFit.cover),
-                        ),
+                            color: Color.fromARGB(255, 255, 0, 0)),
                       ),
                       Positioned(
                         bottom: 0,
                         child: Container(
-                          height: MediaQuery.of(context).size.height * 0.72,
+                          height: MediaQuery.of(context).size.height * 0.92,
                           width: MediaQuery.of(context).size.width,
-                          decoration: const BoxDecoration(
-                            color: Colors.black,
-                          ),
+                          decoration: BoxDecoration(
+                              color: Colors.black,
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(
+                                    MediaQuery.of(context).size.height * 0.250),
+                                topRight: Radius.circular(
+                                    MediaQuery.of(context).size.height * 0.250),
+                              )),
                           child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Padding(
-                                  padding: EdgeInsets.only(left: 15.0),
+                              Padding(
+                                  padding: EdgeInsets.only(
+                                      left: MediaQuery.of(context).size.height *
+                                          0.015),
                                   child: Text(
                                     "SIGNIN",
                                     style: TextStyle(
-                                        fontSize: 25,
+                                        fontSize:
+                                            MediaQuery.of(context).size.height *
+                                                0.025,
                                         fontWeight: FontWeight.bold,
-                                        color: Color.fromARGB(255, 216, 14, 0)),
+                                        color: const Color.fromARGB(
+                                            255, 216, 14, 0)),
                                   )),
-                              const Padding(
+                              Padding(
                                   padding: EdgeInsets.only(
-                                      left: 15.0, bottom: 15.0, right: 15.0),
+                                      left: MediaQuery.of(context).size.height *
+                                          0.015,
+                                      bottom:
+                                          MediaQuery.of(context).size.height *
+                                              0.015,
+                                      right:
+                                          MediaQuery.of(context).size.height *
+                                              0.015),
                                   child: Text(
                                     "Login And Unlock Your  Safety!",
                                     style: TextStyle(
-                                        fontSize: 15,
+                                        fontSize:
+                                            MediaQuery.of(context).size.height *
+                                                0.015,
                                         fontWeight: FontWeight.w500,
                                         color: Colors.white),
                                   )),
-                              const SizedBox(
-                                height: 30,
+                              SizedBox(
+                                height:
+                                    MediaQuery.of(context).size.height * 0.030,
                               ),
                               Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 15.0,
-                                  right: 15.0,
-                                  bottom: 10,
+                                padding: EdgeInsets.only(
+                                  left: MediaQuery.of(context).size.height *
+                                      0.015,
+                                  right: MediaQuery.of(context).size.height *
+                                      0.015,
+                                  bottom: MediaQuery.of(context).size.height *
+                                      0.010,
                                 ),
                                 child: CommonTextFormfield(
                                   onChanged: (value) {
@@ -125,7 +149,7 @@ class _LoginPageState extends State<LoginPage> {
                                     if (value == null || value.isEmpty) {
                                       return "Enter the Email first!";
                                     }
-                                    if (!regexe.hasMatch(value)) {
+                                    if (!regexemail.hasMatch(value)) {
                                       return "Enter Valid Email Format!";
                                     }
                                     return null;
@@ -133,10 +157,13 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                               ),
                               Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 15.0,
-                                  right: 15.0,
-                                  bottom: 15,
+                                padding: EdgeInsets.only(
+                                  left: MediaQuery.of(context).size.height *
+                                      0.015,
+                                  right: MediaQuery.of(context).size.height *
+                                      0.015,
+                                  bottom: MediaQuery.of(context).size.height *
+                                      0.015,
                                 ),
                                 child: CommonTextFormfield(
                                   onChanged: (value) {
@@ -157,75 +184,27 @@ class _LoginPageState extends State<LoginPage> {
                                     if (value.length < 8) {
                                       return "Password is too short, Enter up to 8 digits!";
                                     }
-                                    if (!regexpa.hasMatch(value)) {
+                                    if (!regexpassword.hasMatch(value)) {
                                       return "Use Alphabets(capital and small), symbols and numbers in the password";
                                     }
                                     return null;
                                   },
                                 ),
                               ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  TextButton(
-                                      onPressed: () {},
-                                      child: const Text(
-                                        " Forget password?",
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            color: Color.fromARGB(
-                                                255, 92, 92, 92)),
-                                      )),
-                                ],
-                              ),
                               GestureDetector(
                                 onTap: () {
                                   if (_formKey.currentState!.validate()) {
-                                    Navigator.pushReplacement(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                const HomePage()));
+                                    loginStudent(_emailController.text,
+                                        _passwordController.text);
                                   }
                                 },
-                                child: const Padding(
-                                  padding: EdgeInsets.all(15.0),
-                                  child: CustomButton(
+                                child: Padding(
+                                  padding: EdgeInsets.all(
+                                      MediaQuery.of(context).size.height *
+                                          0.015),
+                                  child: const CustomButton(
                                     buttonText: "SignIn",
                                   ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(top: 5.0),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Text(
-                                      "Don't have an account?",
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        color:
-                                            Color.fromARGB(255, 105, 105, 105),
-                                      ),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.pushReplacement(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    const RegistrationPage()));
-                                      },
-                                      child: const Text(
-                                        "SignUp",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
                                 ),
                               ),
                             ],

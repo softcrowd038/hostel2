@@ -48,7 +48,8 @@ dependencies:
   url_launcher:
   mobile_scanner:
   circle_nav_bar:
-
+  shimmer:
+  telephony:
 
 dev_dependencies:
   flutter_test:

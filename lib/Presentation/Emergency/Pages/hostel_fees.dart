@@ -1,4 +1,12 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'package:accident/Presentation/Emergency/Models/profile_model.dart';
+import 'package:accident/Presentation/Emergency/Models/student_installments.dart';
+import 'package:accident/Presentation/Emergency/Provider/student_installments.dart';
+import 'package:accident/Presentation/Emergency/Provider/student_profile_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HostelFees extends StatefulWidget {
   const HostelFees({super.key});
@@ -8,6 +16,37 @@ class HostelFees extends StatefulWidget {
 }
 
 class _HostelFees extends State<HostelFees> {
+  StudentProfile? studentProfile;
+  StudentInstallments? studentInstallments;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchStudentProfile().then((_) {
+      _fetchStudentInstallments(studentProfile?.registrationNumber ?? '');
+    });
+  }
+
+  Future<void> _fetchStudentProfile() async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    final uuid = sharedPreferences.getString('user_uuid');
+    final provider =
+        Provider.of<StudentProfileProvider>(context, listen: false);
+    final profile = await provider.fetchStudentProfile(uuid!);
+    setState(() {
+      studentProfile = profile;
+    });
+  }
+
+  Future<void> _fetchStudentInstallments(String regiNum) async {
+    final provider =
+        Provider.of<StudentInstallmentsProvider>(context, listen: false);
+    final profile = await provider.fetchStudentInstallments(regiNum);
+    setState(() {
+      studentInstallments = profile;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -63,7 +102,7 @@ class _HostelFees extends State<HostelFees> {
                                 fontWeight: FontWeight.bold),
                           ),
                           Text(
-                            '20000 /-',
+                            studentInstallments?.duePayment ?? '0',
                             style: TextStyle(
                                 color: const Color.fromARGB(255, 161, 161, 161),
                                 fontSize:
@@ -83,7 +122,7 @@ class _HostelFees extends State<HostelFees> {
                                 fontWeight: FontWeight.bold),
                           ),
                           Text(
-                            '25000 /-',
+                            studentInstallments?.remainingPayment ?? '0',
                             style: TextStyle(
                                 color: const Color.fromARGB(255, 161, 161, 161),
                                 fontSize:

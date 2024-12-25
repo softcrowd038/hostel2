@@ -1,5 +1,16 @@
+// ignore_for_file: use_build_context_synchronously, unnecessary_null_comparison, unrelated_type_equality_checks
+
+import 'package:accident/Presentation/Emergency/Models/profile_model.dart';
+import 'package:accident/Presentation/Emergency/Provider/student_profile_provider.dart';
+import 'package:accident/Presentation/dashboard/Models/room_mates_model.dart';
+import 'package:accident/Presentation/dashboard/Utils/room_mates_provider.dart';
 import 'package:accident/Presentation/dashboard/components/seconadary_components/room_mate_column.dart';
+import 'package:accident/data/api_data.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class RoomMates extends StatefulWidget {
   const RoomMates({super.key});
@@ -9,6 +20,62 @@ class RoomMates extends StatefulWidget {
 }
 
 class _RoomMates extends State<RoomMates> {
+  StudentProfile? studentProfile;
+  List<RoommateProfile> roommatesList = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _checkNetworkConnectivity();
+    _fetchStudentProfile().then((_) {
+      _fetchRoomMatesProfile();
+    });
+  }
+
+  Future<void> _checkNetworkConnectivity() async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.none) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Device is not connected to the network.'),
+        ),
+      );
+    }
+  }
+
+  Future<void> _fetchStudentProfile() async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    final uuid = sharedPreferences.getString('user_uuid');
+    final provider =
+        Provider.of<StudentProfileProvider>(context, listen: false);
+    final profile = await provider.fetchStudentProfile(uuid!);
+    setState(() {
+      studentProfile = profile;
+    });
+  }
+
+  Future<void> _fetchRoomMatesProfile() async {
+    final provider = Provider.of<RoomMatesProvider>(context, listen: false);
+    final roomMatesProfile =
+        await provider.fetchRoomMateProfile(studentProfile?.roomNumber ?? 0);
+    setState(() {
+      roommatesList = roomMatesProfile;
+    });
+  }
+
+  Future<void> _makePhoneCall(String phoneNumber) async {
+    final uri = Uri(scheme: 'tel', path: phoneNumber);
+    if (uri != null) {
+      await launchUrlString(uri.toString());
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not launch phone dialer.'),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
@@ -16,48 +83,24 @@ class _RoomMates extends State<RoomMates> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          Padding(
+        children: roommatesList.map((roommate) {
+          return Padding(
             padding:
-                EdgeInsets.all(MediaQuery.of(context).size.height * 0.0080),
-            child: RoomMateColumn(
-              department: 'Software Engineer',
-              imageUrl:
-                  'https://image.tensorartassets.com/cdn-cgi/image/anim=true,plain=false,w=2048,f=jpeg,q=85/posts/images/664286442867920848/0c6d57b6-18cd-4826-a7e0-d0b3d3758d82.jpg',
-              name: 'Harshali Bagul',
+                EdgeInsets.all(MediaQuery.of(context).size.height * 0.0120),
+            child: GestureDetector(
+              onTap: () {
+                _makePhoneCall(roommate.contactNumber);
+              },
+              child: RoomMateColumn(
+                department: roommate.prefferedCourse,
+                imageUrl: roommate.profilePic != null
+                    ? '$baseUrl/student_regi/${roommate.profilePic}'
+                    : 'https://via.placeholder.com/150',
+                name: '${roommate.firstName} ${roommate.lastName}',
+              ),
             ),
-          ),
-          Padding(
-            padding:
-                EdgeInsets.all(MediaQuery.of(context).size.height * 0.0080),
-            child: RoomMateColumn(
-              department: 'CRPF',
-              imageUrl:
-                  'https://t4.ftcdn.net/jpg/04/01/64/61/360_F_401646148_P8vp7rMVrnauzPapMQCuupZu4eXaM6ac.jpg',
-              name: 'Akshay Salve',
-            ),
-          ),
-          Padding(
-            padding:
-                EdgeInsets.all(MediaQuery.of(context).size.height * 0.0080),
-            child: RoomMateColumn(
-              department: 'Software Tester',
-              imageUrl:
-                  'https://image.tensorartassets.com/cdn-cgi/image/w=600/posts/images/698586356636672348/9139e674-e28e-44ab-bf61-ebae4f65d81f.jpg',
-              name: 'Savita Thete',
-            ),
-          ),
-          Padding(
-            padding:
-                EdgeInsets.all(MediaQuery.of(context).size.height * 0.0080),
-            child: RoomMateColumn(
-              department: 'Software Engineer',
-              imageUrl:
-                  'https://www.shutterstock.com/image-photo/headshot-portrait-handsome-guy-19-600nw-2457814671.jpg',
-              name: 'Sachin Shivade',
-            ),
-          ),
-        ],
+          );
+        }).toList(),
       ),
     );
   }

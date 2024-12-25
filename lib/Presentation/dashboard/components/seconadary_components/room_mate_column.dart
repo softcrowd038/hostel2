@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 class RoomMateColumn extends StatefulWidget {
-  String imageUrl;
-  String name;
-  String department;
-  RoomMateColumn(
+  final String imageUrl;
+  final String name;
+  final String department;
+  const RoomMateColumn(
       {super.key,
       required this.imageUrl,
       required this.name,
