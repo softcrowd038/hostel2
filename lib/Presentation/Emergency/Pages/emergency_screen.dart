@@ -2,9 +2,8 @@
 
 import 'package:accident/Presentation/Emergency/Models/profile_model.dart';
 import 'package:accident/Presentation/Emergency/Provider/student_profile_provider.dart';
-import 'package:accident/Presentation/dashboard/Utils/location_provider.dart';
+import 'package:accident/Presentation/scanner/services/sms_service.dart';
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:telephony/telephony.dart';
@@ -18,7 +17,6 @@ class EmergencyScreen extends StatefulWidget {
 
 class _EmergencyScreen extends State<EmergencyScreen> {
   StudentProfile? studentProfile;
-  DateTime? _lastSmsTimestamp;
 
   @override
   void initState() {
@@ -59,50 +57,12 @@ class _EmergencyScreen extends State<EmergencyScreen> {
     }
   }
 
-  void sendEmergencySMS() async {
-    final provider = Provider.of<LocationProvider>(context, listen: false);
-
-    if (_lastSmsTimestamp == null ||
-        DateTime.now().difference(_lastSmsTimestamp!) >
-            const Duration(seconds: 15)) {
-      try {
-        if (studentProfile?.emergencyContactNumber == null) {
-          print('Emergency phone number is not available.');
-          return;
-        }
-
-        String emergencyNumber = studentProfile!.emergencyContactNumber;
-        LatLng? currentPosition = provider.currentPosition;
-        print(currentPosition?.latitude);
-        if (currentPosition == null) {
-          print('Current position is not available.');
-          return;
-        }
-
-        String message = 'https://www.google.com/maps/search/?api=1'
-            '&query=${currentPosition.latitude},${currentPosition.longitude}';
-        await Telephony.instance.sendSms(
-            to: emergencyNumber,
-            message: 'Hey, I caught in emergency, at this location: $message');
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Emergency SMS sent to $emergencyNumber')),
-        );
-        _lastSmsTimestamp = DateTime.now();
-      } catch (e) {
-        print('Error sending emergency SMS: $e');
-      }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('SMS not sent due to cooldown period')),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
+
+    SMSService smsService = SMSService();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -133,7 +93,9 @@ class _EmergencyScreen extends State<EmergencyScreen> {
               ),
             ),
             GestureDetector(
-              onTap: sendEmergencySMS,
+              onTap: () {
+                smsService.sendEmergencySMS(studentProfile, context);
+              },
               child: Padding(
                 padding: EdgeInsets.all(screenHeight * 0.015),
                 child: Container(

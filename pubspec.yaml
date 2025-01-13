@@ -50,6 +50,7 @@ dependencies:
   circle_nav_bar:
   shimmer:
   telephony:
+  workmanager:
 
 dev_dependencies:
   flutter_test:

@@ -16,7 +16,6 @@ import 'package:provider/provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize the app after ensuring everything is set up
   runApp(const MyAppProviders());
 }
 

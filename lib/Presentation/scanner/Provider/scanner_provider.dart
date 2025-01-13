@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 
 class ScannerProvider extends ChangeNotifier {
   StudentCheckInAndCheckOut? _studentCheckInAndCheckOut;
-  String checkInStatus = ""; // Add a property to track status
+  String checkInStatus = "";
 
   StudentCheckInAndCheckOut? get studentCheckInAndCheckOut =>
       _studentCheckInAndCheckOut;

@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, avoid_print
 
 import 'package:accident/Presentation/Emergency/Models/profile_model.dart';
 import 'package:accident/Presentation/Emergency/Pages/emergency_screen.dart';
@@ -8,11 +8,13 @@ import 'package:accident/Presentation/Emergency/Provider/student_profile_provide
 import 'package:accident/Presentation/dashboard/pages/home_page.dart';
 import 'package:accident/Presentation/login_and_registration/Services/api_service.dart';
 import 'package:accident/Presentation/scanner/pages/scanner_page.dart';
+import 'package:accident/Presentation/scanner/services/sms_service.dart';
 import 'package:accident/data/api_data.dart';
 import 'package:flutter/material.dart';
 import 'package:circle_nav_bar/circle_nav_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:telephony/telephony.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -55,13 +57,54 @@ class HomePageState extends State<HomePage> {
     });
   }
 
+  void requestPermissions() async {
+    try {
+      final bool? result = await Telephony.instance.requestSmsPermissions;
+      if (result == true) {
+        print("SMS permission granted");
+      } else {
+        print("SMS permission denied");
+      }
+    } catch (e) {
+      print('Error requesting permissions: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    SMSService smsService = SMSService();
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       appBar: AppBar(
-        backgroundColor: Colors.white,
-      ),
+          backgroundColor: Colors.white,
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onTap: () {
+                  smsService.sendEmergencySMS(studentProfile, context);
+                },
+                child: Container(
+                  height: MediaQuery.of(context).size.height * 0.035,
+                  width: MediaQuery.of(context).size.width * 0.15,
+                  decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(
+                          MediaQuery.of(context).size.height * 0.002)),
+                  child: Center(
+                    child: Text(
+                      'help',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: MediaQuery.of(context).size.height * 0.014,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              )
+            ],
+          )),
       body: _widgetOptions.elementAt(_selectedIndex),
       drawer: Drawer(
         backgroundColor: Colors.white,

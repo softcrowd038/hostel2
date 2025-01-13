@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously, avoid_print
 
+import 'package:accident/Presentation/scanner/services/sms_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -7,7 +8,6 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:accident/Presentation/Emergency/Models/profile_model.dart';
 import 'package:accident/Presentation/Emergency/Provider/student_profile_provider.dart';
 import 'package:accident/Presentation/scanner/Provider/scanner_provider.dart';
-import 'package:telephony/telephony.dart';
 
 class ScannerPage extends StatefulWidget {
   const ScannerPage({Key? key}) : super(key: key);
@@ -21,7 +21,6 @@ class _ScannerPageState extends State<ScannerPage> {
   String uniqueID = "2ddb8d41-76ee-4368-aebc-041ff0d93b78";
   StudentProfile? studentProfile;
   bool isLoading = false;
-  DateTime? _lastSmsTimestamp;
 
   @override
   void initState() {
@@ -30,42 +29,6 @@ class _ScannerPageState extends State<ScannerPage> {
     _fetchStudentProfile().then((_) {
       getCheckInCheckOutStatus();
     });
-  }
-
-  void sendEmergencySMS() async {
-    final provider = Provider.of<ScannerProvider>(context, listen: false);
-
-    if (_lastSmsTimestamp == null ||
-        DateTime.now().difference(_lastSmsTimestamp!) >
-            const Duration(seconds: 5)) {
-      try {
-        if (studentProfile?.emergencyContactNumber == null) {
-          print('Emergency phone number is not available.');
-          return;
-        }
-
-        String emergencyNumber = studentProfile!.guardianContact;
-
-        String message = '${studentProfile?.firstName}';
-        await Telephony.instance.sendSms(
-            to: emergencyNumber,
-            message:
-                '$message is just ${provider.checkInStatus}  ${provider.checkInStatus == 'checked-in' ? 'in' : 'from'} hostel');
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
-                  'Emergency SMS sent to your ${studentProfile?.relation}')),
-        );
-        _lastSmsTimestamp = DateTime.now();
-      } catch (e) {
-        print('Error sending emergency SMS: $e');
-      }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('SMS not sent due to cooldown period')),
-      );
-    }
   }
 
   Future<void> getCheckInCheckOutStatus() async {
@@ -154,6 +117,7 @@ class _ScannerPageState extends State<ScannerPage> {
   }
 
   void startScanner(String checkedStatus) {
+    SMSService smsService = SMSService();
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -182,7 +146,8 @@ class _ScannerPageState extends State<ScannerPage> {
                   if (qrCode.isNotEmpty && qrCode == uniqueID) {
                     _processScan(studentProfile?.id ?? 0, checkedStatus)
                         .then((_) {
-                      sendEmergencySMS();
+                      smsService.sendCheckInCheckOutSMS(
+                          studentProfile, context);
                     });
                     Navigator.pop(context);
                     break;
