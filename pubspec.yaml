@@ -51,6 +51,9 @@ dependencies:
   shimmer:
   telephony:
   workmanager:
+  sensors:
+  flutter_background:
+  
 
 dev_dependencies:
   flutter_test:

@@ -73,49 +73,8 @@ class SMSService {
             '&query=${currentPosition.latitude},${currentPosition.longitude}';
         await Telephony.instance.sendSms(
             to: emergencyNumber,
-            message: 'Hey, I caught in emergency, at this location: $message');
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Emergency SMS sent to $emergencyNumber')),
-        );
-        _lastSmsTimestamp = DateTime.now();
-      } catch (e) {
-        print('Error sending emergency SMS: $e');
-      }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('SMS not sent due to cooldown period')),
-      );
-    }
-  }
-
-  void sendNotWithInTimeSMS(
-      StudentProfile? studentProfile, BuildContext context) async {
-    final provider = Provider.of<LocationProvider>(context, listen: false);
-
-    if (_lastSmsTimestamp == null ||
-        DateTime.now().difference(_lastSmsTimestamp!) >
-            const Duration(seconds: 15)) {
-      try {
-        if (studentProfile?.emergencyContactNumber == null) {
-          print('Emergency phone number is not available.');
-          return;
-        }
-
-        String emergencyNumber = studentProfile!.emergencyContactNumber;
-        LatLng? currentPosition = provider.currentPosition;
-        print(currentPosition?.latitude);
-        if (currentPosition == null) {
-          print('Current position is not available.');
-          return;
-        }
-
-        String message = 'https://www.google.com/maps/search/?api=1'
-            '&query=${currentPosition.latitude},${currentPosition.longitude}';
-        await Telephony.instance.sendSms(
-            to: emergencyNumber,
             message:
-                '${studentProfile.firstName} is still outside hostel at this location: $message');
+                '${studentProfile.firstName} is caught in an emergency at this location: $message , contact her immediately');
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Emergency SMS sent to $emergencyNumber')),

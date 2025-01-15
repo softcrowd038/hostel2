@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously, avoid_print
 
+import 'package:accident/Presentation/Emergency/services/accident_detection_provider.dart';
 import 'package:accident/Presentation/scanner/services/sms_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -25,9 +26,14 @@ class _ScannerPageState extends State<ScannerPage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final accidentDetectionProvider =
+          Provider.of<AccidentDetectionProvider>(context, listen: false);
+      accidentDetectionProvider.checkAndSendSMS();
 
-    _fetchStudentProfile().then((_) {
-      getCheckInCheckOutStatus();
+      _fetchStudentProfile().then((_) {
+        getCheckInCheckOutStatus();
+      });
     });
   }
 
@@ -89,6 +95,7 @@ class _ScannerPageState extends State<ScannerPage> {
 
   Future<void> _processScan(int regnum, String checkedstatus) async {
     final provider = Provider.of<ScannerProvider>(context, listen: false);
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
 
     setState(() {
       isLoading = true;
@@ -100,6 +107,10 @@ class _ScannerPageState extends State<ScannerPage> {
       final response = checkedstatus == 'checked-in'
           ? await provider.postCheckOut(regnum)
           : await provider.postCheckIn(regnum);
+
+      checkedstatus == 'checked-in'
+          ? sharedPreferences.setString('status', 'checked-out')
+          : sharedPreferences.setString('status', 'checked-in');
 
       if (response['status'] == 'success') {
         await getCheckInCheckOutStatus();
