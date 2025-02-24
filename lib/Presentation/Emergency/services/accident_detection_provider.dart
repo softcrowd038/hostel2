@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print, unused_local_variable, use_build_context_synchronously
+// ignore_for_file: avoid_print, unused_local_variable, use_build_context_synchronously, unnecessary_null_comparison
 
 import 'dart:async';
 import 'package:accident/Presentation/Emergency/Models/profile_model.dart';

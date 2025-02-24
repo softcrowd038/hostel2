@@ -192,7 +192,7 @@ class HomePageState extends State<HomePage> {
         activeIndex: _selectedIndex,
         onTap: _onItemTapped,
         circleColor:
-            const Color.fromARGB(255, 221, 15, 0), // Active circle color
+            const Color.fromARGB(255, 221, 15, 0), 
         activeIcons: const [
           Icon(Icons.home, color: Colors.white),
           Icon(Icons.qr_code_scanner, color: Colors.white),

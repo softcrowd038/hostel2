@@ -13,13 +13,14 @@ class SMSService {
 
   void sendCheckInCheckOutSMS(
       StudentProfile? studentProfile, BuildContext context) async {
+    if (!context.mounted) return;
     final provider = Provider.of<ScannerProvider>(context, listen: false);
 
     if (_lastSmsTimestamp == null ||
         DateTime.now().difference(_lastSmsTimestamp!) >
             const Duration(seconds: 5)) {
       try {
-        if (studentProfile?.emergencyContactNumber == null) {
+        if (studentProfile?.guardianContact == null) {
           print('Emergency phone number is not available.');
           return;
         }

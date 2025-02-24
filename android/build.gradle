@@ -4,6 +4,9 @@ buildscript {
         google()
         mavenCentral()
     }
+     dependencies {
+        classpath "com.android.tools.build:gradle:8.3.0"
+    }
 }
 
 allprojects {
@@ -11,6 +14,28 @@ allprojects {
         google()
         mavenCentral()
     }
+     subprojects {
+        afterEvaluate { project ->
+            if (project.hasProperty('android')) {
+                project.android {
+                    if (namespace == null) {
+                        namespace project.group
+                    }
+                }
+            }
+        }
+    }
+    subprojects {
+    afterEvaluate { project ->
+        if (project.plugins.hasPlugin("com.android.application") ||
+                project.plugins.hasPlugin("com.android.library")) {
+            project.android {
+                compileSdkVersion 34
+                buildToolsVersion "34.0.0"
+            }
+        }
+    }
+}
 }
 
 rootProject.buildDir = "../build"
