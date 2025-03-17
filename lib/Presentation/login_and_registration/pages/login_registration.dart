@@ -68,7 +68,7 @@ class _LoginPageState extends State<LoginPage> {
                         height: MediaQuery.of(context).size.height,
                         width: MediaQuery.of(context).size.width,
                         decoration: const BoxDecoration(
-                            color: Color.fromARGB(255, 255, 0, 0)),
+                            color: Color.fromARGB(255, 0, 102, 255)),
                       ),
                       Positioned(
                         bottom: 0,
@@ -98,8 +98,8 @@ class _LoginPageState extends State<LoginPage> {
                                             MediaQuery.of(context).size.height *
                                                 0.025,
                                         fontWeight: FontWeight.bold,
-                                        color: const Color.fromARGB(
-                                            255, 216, 14, 0)),
+                                        color:
+                                            Color.fromARGB(255, 0, 102, 255)),
                                   )),
                               Padding(
                                   padding: EdgeInsets.only(

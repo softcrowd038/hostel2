@@ -49,7 +49,7 @@ class _RoomMateColumnState extends State<RoomMateColumn> {
                     EdgeInsets.all(MediaQuery.of(context).size.height * 0.008),
                 child: Icon(
                   Icons.call,
-                  color: Colors.red,
+                  color: Colors.blue,
                   size: MediaQuery.of(context).size.height * 0.0250,
                 ),
               ),

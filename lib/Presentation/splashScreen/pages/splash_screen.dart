@@ -51,7 +51,8 @@ class _SplashScreenState extends State<SplashScreen> {
       backgroundColor: Color.fromARGB(255, 255, 255, 255),
       body: Center(
         child: Image(
-          image: AssetImage("assets/images/hostel.png"),
+          image: NetworkImage(
+              "https://cdn.vectorstock.com/i/500p/89/55/hostel-logo-bedroom-key-and-sleeping-character-vector-31988955.jpg"),
           height: 250,
           width: 250,
         ),

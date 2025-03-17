@@ -113,7 +113,7 @@ class HomePageState extends State<HomePage> {
           children: <Widget>[
             DrawerHeader(
               decoration: const BoxDecoration(
-                color: Color.fromARGB(255, 221, 15, 0),
+                color: Color.fromARGB(255, 0, 102, 255),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -191,8 +191,7 @@ class HomePageState extends State<HomePage> {
       bottomNavigationBar: CircleNavBar(
         activeIndex: _selectedIndex,
         onTap: _onItemTapped,
-        circleColor:
-            const Color.fromARGB(255, 221, 15, 0), 
+        circleColor: const Color.fromARGB(255, 0, 102, 255),
         activeIcons: const [
           Icon(Icons.home, color: Colors.white),
           Icon(Icons.qr_code_scanner, color: Colors.white),

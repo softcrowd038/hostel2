@@ -43,7 +43,7 @@ class _PersonalInfoRow extends State<PersonalInfoRow> {
                         MediaQuery.of(context).size.height * 0.008),
                     child: Icon(
                       widget.icon,
-                      color: Colors.red,
+                      color: Colors.blue,
                     ),
                   )),
               SizedBox(

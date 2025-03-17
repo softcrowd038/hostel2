@@ -3,7 +3,7 @@
 import 'package:permission_handler/permission_handler.dart';
 import 'package:telephony/telephony.dart';
 
-const String baseUrl = 'http://192.168.1.21:8086/api';
+const String baseUrl = 'https://hostel-management.co.codiantsolutions.com/api';
 
 final regexemail = RegExp(r'^[\w\-\.]+@([\w\-]+\.)+[\w\-]{2,4}$');
 final regexpassword =
