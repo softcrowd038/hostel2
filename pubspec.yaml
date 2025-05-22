@@ -39,14 +39,14 @@ dependencies:
   liquid_progress_indicator_v2:
   flutter_polyline_points:
   google_maps_flutter:
-  location:
+  location: ^8.0.0
   permission_handler:
   geolocator:
   geocoding:
   shared_preferences:
   connectivity_plus:
   url_launcher:
-  mobile_scanner:
+  mobile_scanner: ^6.0.10
   circle_nav_bar:
   shimmer:
   telephony:

@@ -56,7 +56,7 @@ class _ProfilePage extends State<ProfilePage> {
         body: studentProfile == null
             ? const Center(
                 child: CircularProgressIndicator(
-                color: Colors.blue,
+                color: Colors.red,
               ))
             : SingleChildScrollView(
                 child: Column(
@@ -188,7 +188,7 @@ class _ProfilePage extends State<ProfilePage> {
                                     Text(
                                       studentInstallments?.duePayment ?? '0',
                                       style: TextStyle(
-                                          color: Colors.blue,
+                                          color: Colors.red,
                                           fontSize: MediaQuery.of(context)
                                                   .size
                                                   .height *
@@ -229,7 +229,7 @@ class _ProfilePage extends State<ProfilePage> {
                                       Text(
                                         studentInstallments?.installment ?? '0',
                                         style: TextStyle(
-                                            color: Colors.blue,
+                                            color: Colors.red,
                                             fontSize: MediaQuery.of(context)
                                                     .size
                                                     .height *
@@ -272,7 +272,7 @@ class _ProfilePage extends State<ProfilePage> {
                                         studentInstallments?.remainingPayment ??
                                             '0',
                                         style: TextStyle(
-                                            color: Colors.blue,
+                                            color: Colors.red,
                                             fontSize: MediaQuery.of(context)
                                                     .size
                                                     .height *
@@ -367,7 +367,7 @@ class _ProfilePage extends State<ProfilePage> {
                                                   0.008),
                                           child: const Icon(
                                             Icons.location_on_outlined,
-                                            color: Colors.blue,
+                                            color: Colors.red,
                                           ),
                                         )),
                                     SizedBox(
